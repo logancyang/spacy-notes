@@ -15,30 +15,10 @@ it work with a trained NER model.
 Say we have several brand names,
 
 ```
-['Armani', 'Ralph Lauren', 'Monique Lhuillier', 'Norma Kamali', ...]
+[u"Armani", u"Ralph Lauren", u"Monique Lhuillier", u"Norma Kamali"]
 ```
 
 Assume we have some text messages in which we find these brand names. We apply the trained NER model on these messages to make predictions.
-
-```
-import spacy
-from spacy.matcher import PhraseMatcher
-
-nlp = spacy.load('en_core_web_sm')
-matcher = PhraseMatcher(nlp.vocab)
-terms = [u"Barack Obama", u"Angela Merkel", u"Washington, D.C."]
-# Only run nlp.make_doc to speed things up
-patterns = [nlp.make_doc(text) for text in terms]
-matcher.add("TerminologyList", None, *patterns)
-
-doc = nlp(u"German Chancellor Angela Merkel and US President Barack Obama "
-          u"converse in the Oval Office inside the White House in Washington, D.C.")
-matches = matcher(doc)
-for match_id, start, end in matches:
-    span = doc[start:end]
-    print(span.text)
-```
-
 To make this case insensitive, use `attr="LOWER"`,
 
 ```
@@ -47,12 +27,16 @@ from spacy.matcher import PhraseMatcher
 
 nlp = English()
 matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-patterns = [nlp.make_doc(name) for name in [u"Angela Merkel", u"Barack Obama"]]
-matcher.add("Names", None, *patterns)
+patterns = [nlp.make_doc(name) for name in [u"Armani", u"Ralph Lauren", u"Monique Lhuillier", u"Norma Kamali"]]
+matcher.add("Brands", None, *patterns)
 
-doc = nlp(u"angela merkel and us president barack Obama")
+doc = nlp(u"armani and monique Lhuillier are both brands")
 for match_id, start, end in matcher(doc):
     print("Matched based on lowercase token text:", doc[start:end])
+
+# output:
+# Matched based on lowercase token text: armani
+# Matched based on lowercase token text: monique Lhuillier
 ```
 
 It can even match number entities by shape, `attr="SHAPE"`, e.g. IP addresses.
